@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-public class ShootDelayArea : Area
+public class AttackArea : Area
 {
-    [SerializeField] float value = 0.1f;
+    [SerializeField] int value = 1;
 
     protected override void OnTriggerEnter(Collider other)
     {
@@ -13,11 +13,11 @@ public class ShootDelayArea : Area
     {
         if (isUpgrade)
         {
-            StatsManager.instance.UpgradeShootDelay(value);
+            StatsManager.instance.UpgradeDamage(value);
         }
         else
         {
-            StatsManager.instance.DowngradeShootDelay(value);
+            StatsManager.instance.DowngradeDamage(value);
         }
     }
 }

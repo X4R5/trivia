@@ -191,7 +191,9 @@ public class FirebaseAuthManager : MonoBehaviour
             { "leaderboardRank", 0 },
             { "profilePhoto", 0 },
             { "points", 0 },
-            { "jokerCounts", "1,1,1" }
+            { "bombJokerCount", 1 },
+            { "doubleAnswerJokerCount", 1 },
+            { "skipQuestionJokerCount", 1 }
         };
 
         docRef.SetAsync(data).ContinueWithOnMainThread(task => {

@@ -5,6 +5,7 @@ using Firebase.Firestore;
 using Firebase.Extensions;
 using System.Threading.Tasks;
 using TMPro;
+using System;
 
 public class QuizManager : MonoBehaviour
 {
@@ -95,6 +96,8 @@ public class QuizManager : MonoBehaviour
     {
         if (currentQuestionIndex < questions.Count)
         {
+            isDoubleAnswerActive = false;
+
             answerButton1.interactable = answerButton2.interactable = answerButton3.interactable = answerButton4.interactable = true;
 
             var currentQuestion = questions[currentQuestionIndex];
@@ -112,8 +115,24 @@ public class QuizManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("No more questions.");
+            FinishQuiz();
         }
+    }
+
+    private void FinishQuiz()
+    {
+        PlayerPrefs.SetInt("QuizScore", ScoreManager.instance.GetQuizScore());
+
+        Debug.Log("Quiz finished.");
+        Debug.Log("Score: " + ScoreManager.instance.GetQuizScore());
+        Debug.Log("Runner scene is loading in 2 seconds...");
+
+        Invoke("LoadRunnerScene", 2f);
+    }
+
+    private void LoadRunnerScene()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Runner");
     }
 
     void CheckAnswer(string selectedAnswer)

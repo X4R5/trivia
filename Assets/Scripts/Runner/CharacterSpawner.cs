@@ -10,8 +10,9 @@ public class CharacterSpawner : MonoBehaviour
 
     private void Start()
     {
-        //int characterCount = PlayerPrefs.GetInt("CharacterCount", 1);
+        characterCount = PlayerPrefs.GetInt("QuizScore");
         PlaceCharactersInCircle(characterCount);
+        PlayerPrefs.SetInt("QuizScore", 0);
     }
 
     private void PlaceCharactersInCircle(int count)

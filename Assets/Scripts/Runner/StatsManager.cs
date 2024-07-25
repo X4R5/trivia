@@ -32,6 +32,21 @@ public class StatsManager : MonoBehaviour
         return damage;
     }
 
+    public void UpgradeDamage(int amount)
+    {
+        damage += amount;
+    }
+
+    public void DowngradeDamage(int amount)
+    {
+        damage -= amount;
+
+        if (damage < 1)
+        {
+            damage = 1;
+        }
+    }
+
     public void SetShootDelay(float delay)
     {
         shootDelay = delay;

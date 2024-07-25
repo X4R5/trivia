@@ -62,9 +62,7 @@ public class EnemyController : MonoBehaviour
 
     private void Die()
     {
-        // Add score
-        //GameManager.Instance.AddScore(prize);
-        // Destroy enemy
+        CoinsManager.instance.AddCoins(prize);
         Destroy(gameObject);
     }
 }

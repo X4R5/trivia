@@ -61,13 +61,14 @@ public class ProfileManager : MonoBehaviour
             snapshot.TryGetValue("username", out string userName);
             snapshot.TryGetValue("points", out int points);
             snapshot.TryGetValue("profilePhoto", out int photoId);
-            snapshot.TryGetValue("jokerCounts", out string jokerCounts);
+            snapshot.TryGetValue("bombJokerCount", out int joker1count);
+            snapshot.TryGetValue("doubleAnswerJokerCount", out int joker2count);
+            snapshot.TryGetValue("skipQuestionJokerCount", out int joker3count);
 
-            string[] jokerCountsArray = jokerCounts.Split(',');
-            joker1count = int.Parse(jokerCountsArray[0]);
-            joker2count = int.Parse(jokerCountsArray[1]);
-            joker3count = int.Parse(jokerCountsArray[2]);
 
+            this.joker1count = joker1count;
+            this.joker2count = joker2count;
+            this.joker3count = joker3count;
             username = userName;
             this.points = points.ToString();
             this.photoId = photoId;
