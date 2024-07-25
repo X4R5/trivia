@@ -26,7 +26,9 @@ public class BulletShoot : MonoBehaviour
     private void Shoot()
     {
         BulletController bullet = ObjectPooler.instance.GetBullet();
+        bullet.SetDamage(StatsManager.instance.GetDamage());
         bullet.transform.position = shootPoint.position;
+        bullet.SetDirection(Vector3.forward);
         bullet.gameObject.SetActive(true);
     }
 }

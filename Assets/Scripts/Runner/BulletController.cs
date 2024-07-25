@@ -4,30 +4,40 @@ using UnityEngine;
 
 public class BulletController : MonoBehaviour
 {
-    public float speed = 10f;
-    public float lifeTime = 5f;
-    public int damage = 1;
+    float lifeTime = 5f, speed = 10f;
+    int damage = 1;
 
-    private void Start()
+    Vector3 direction;
+
+    private void Awake()
+    {
+        lifeTime = StatsManager.instance.GetBulletLifeTime();
+        speed = StatsManager.instance.GetBulletSpeed();
+    }
+
+    private void OnEnable()
     {
         Invoke("DestroyBullet", lifeTime);
     }
 
-    private void Update()
+    private void OnDisable()
     {
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
+        CancelInvoke();
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void Update()
     {
-        //if (collision.CompareTag("Enemy"))
-        //{
-        //    collision.GetComponent<EnemyController>().TakeDamage(damage);
-        //    Destroy(gameObject);
-        //}
-        
-        Debug.Log("Bullet hit: " + collision.name);
-        DestroyBullet();
+        transform.Translate(direction * speed * Time.deltaTime);
+    }
+
+    private void OnTriggerEnter(Collider collision)
+    {
+        if (collision.CompareTag("Enemy"))
+        {
+            Debug.Log("Hit enemy");
+            collision.GetComponent<EnemyController>().TakeDamage(damage);
+            DestroyBullet();
+        }
     }
 
     public void SetDamage(int damage)
@@ -38,5 +48,10 @@ public class BulletController : MonoBehaviour
     private void DestroyBullet()
     {
         gameObject.SetActive(false);
+    }
+
+    public void SetDirection(Vector3 direction)
+    {
+        this.direction = direction;
     }
 }
