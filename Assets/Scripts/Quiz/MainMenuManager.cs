@@ -12,6 +12,7 @@ public class MainMenuManager : MonoBehaviour
 {
     private FirebaseAuth auth;
     private FirebaseUser user;
+    private FirebaseFirestore db;
 
     [SerializeField] Button profileButton, marketButton, logoutButton;
 
@@ -29,6 +30,7 @@ public class MainMenuManager : MonoBehaviour
     {
         auth = FirebaseAuth.DefaultInstance;
         user = auth.CurrentUser;
+        db = FirebaseFirestore.DefaultInstance;
 
         profileButton.onClick.AddListener(LoadProfileScene);
         marketButton.onClick.AddListener(LoadMarketScene);
@@ -65,12 +67,32 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void LoadPlayerPortrait()
+    private async void LoadPlayerPortrait()
     {
         var allAvatars = Resources.LoadAll<Sprite>("AvatarPack");
-        int avatarIndex = PlayerPrefs.GetInt("profilePhoto");
+        int currentAvatar = 0;
 
-        profileButton.GetComponent<Image>().sprite = allAvatars[avatarIndex];
+        await db.Collection("users").Document(auth.CurrentUser.UserId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Error loading profile: " + task.Exception);
+                return;
+            }
+
+            DocumentSnapshot snapshot = task.Result;
+            if (snapshot.Exists)
+            {
+                currentAvatar = snapshot.GetValue<int>("profilePhoto");
+            }
+            else
+            {
+                Debug.Log("No profile data found.");
+            }
+        });
+
+
+        profileButton.GetComponent<Image>().sprite = allAvatars[currentAvatar];
     }
 
     public void LoadProfileScene()
