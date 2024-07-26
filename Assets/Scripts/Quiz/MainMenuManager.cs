@@ -13,7 +13,7 @@ public class MainMenuManager : MonoBehaviour
     private FirebaseAuth auth;
     private FirebaseUser user;
 
-    [SerializeField] Button profileButton;
+    [SerializeField] Button profileButton, marketButton, logoutButton;
 
     [SerializeField] List<Button> categoryButtons = new List<Button>();
 
@@ -31,9 +31,22 @@ public class MainMenuManager : MonoBehaviour
         user = auth.CurrentUser;
 
         profileButton.onClick.AddListener(LoadProfileScene);
+        marketButton.onClick.AddListener(LoadMarketScene);
+        logoutButton.onClick.AddListener(Logout);
 
         CheckIfUserLoggedIn();
         LoadPlayerPortrait();
+    }
+
+    private void Logout()
+    {
+        auth.SignOut();
+        UnityEngine.SceneManagement.SceneManager.LoadScene("FrontPage");
+    }
+
+    private void LoadMarketScene()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Market");
     }
 
     public void LoadQuizPage(string category)
