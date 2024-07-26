@@ -14,7 +14,7 @@ public class MainMenuManager : MonoBehaviour
     private FirebaseUser user;
     private FirebaseFirestore db;
 
-    [SerializeField] Button profileButton, marketButton, logoutButton;
+    [SerializeField] Button profileButton, marketButton, leaderboardButton, logoutButton;
 
     [SerializeField] List<Button> categoryButtons = new List<Button>();
 
@@ -35,9 +35,15 @@ public class MainMenuManager : MonoBehaviour
         profileButton.onClick.AddListener(LoadProfileScene);
         marketButton.onClick.AddListener(LoadMarketScene);
         logoutButton.onClick.AddListener(Logout);
+        leaderboardButton.onClick.AddListener(LoadLeaderboardScene);
 
         CheckIfUserLoggedIn();
         LoadPlayerPortrait();
+    }
+
+    private void LoadLeaderboardScene()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Leaderboard");
     }
 
     private void Logout()

@@ -24,6 +24,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Market.unity
     guid: b2c3e907ec1d2aa4d985a24bbdc2b677
   - enabled: 1
+    path: Assets/Scenes/Leaderboard.unity
+    guid: 3b3de039a909c86438325cab33700e9a
+  - enabled: 1
     path: Assets/Scenes/QuizPage.unity
     guid: c4c26e908e6e3cf4189fa8a5686b83aa
   - enabled: 1
