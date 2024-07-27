@@ -71,6 +71,7 @@ public class ProfileManager : MonoBehaviour
             this.joker3count = joker3count;
             username = userName;
             this.points = points.ToString();
+            Debug.Log("User: " + username + " Points: " + points + " PhotoId: " + photoId);
             this.photoId = photoId;
 
         }

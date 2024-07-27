@@ -32,12 +32,16 @@ public class MainMenuManager : MonoBehaviour
         user = auth.CurrentUser;
         db = FirebaseFirestore.DefaultInstance;
 
+        CheckIfUserLoggedIn();
+
+        if(user == null) return;
+
         profileButton.onClick.AddListener(LoadProfileScene);
         marketButton.onClick.AddListener(LoadMarketScene);
         logoutButton.onClick.AddListener(Logout);
         leaderboardButton.onClick.AddListener(LoadLeaderboardScene);
 
-        CheckIfUserLoggedIn();
+        
         LoadPlayerPortrait();
     }
 
@@ -69,7 +73,7 @@ public class MainMenuManager : MonoBehaviour
         if (user == null)
         {
             Debug.Log("User is not logged in.");
-            UnityEngine.SceneManagement.SceneManager.LoadScene("SignIn");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("FrontPage");
         }
     }
 

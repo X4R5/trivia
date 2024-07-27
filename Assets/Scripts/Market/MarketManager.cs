@@ -70,12 +70,13 @@ public class MarketManager : MonoBehaviour
 
     private void UpdatePointsText()
     {
+        Debug.Log("Points: " + points);
         pointsText.text = points.ToString() + " Points";
     }
 
-    private void LoadMarket()
+    private async void LoadMarket()
     {
-        db.Collection("users").Document(auth.CurrentUser.UserId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        await db.Collection("users").Document(auth.CurrentUser.UserId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -89,15 +90,15 @@ public class MarketManager : MonoBehaviour
                 points = snapshot.GetValue<int>("points");
                 currentAvatar = snapshot.GetValue<int>("profilePhoto");
                 boughtAvatars = snapshot.GetValue<List<int>>("boughtAvatars");
-
-                UpdatePointsText();
-                SetupAvatarButtons();
             }
             else
             {
                 Debug.Log("No market data found.");
             }
         });
+
+        UpdatePointsText();
+        SetupAvatarButtons();
     }
 
     private void SetupAvatarButtons()

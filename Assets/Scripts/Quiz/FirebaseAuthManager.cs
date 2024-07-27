@@ -190,6 +190,7 @@ public class FirebaseAuthManager : MonoBehaviour
             { "username", usernameField.text },
             { "leaderboardRank", 0 },
             { "profilePhoto", 0 },
+            { "boughtAvatars", new List<int>() },
             { "points", 0 },
             { "bombJokerCount", 1 },
             { "doubleAnswerJokerCount", 1 },
