@@ -18,19 +18,19 @@ public class ScoreManager : MonoBehaviour
 
     private void Start()
     {
-        quizScoreText.text = quizScore.ToString();
+        quizScoreText.text = "Score: " + quizScore.ToString();
     }
 
     public void AddQuizScore(int scoreToAdd)
     {
         quizScore += scoreToAdd;
-        quizScoreText.text = quizScore.ToString();
+        quizScoreText.text = "Score: " + quizScore.ToString();
     }
 
     public void RemoveQuizScore(int scoreToRemove)
     {
         quizScore -= scoreToRemove;
-        quizScoreText.text = quizScore.ToString();
+        quizScoreText.text = "Score: " + quizScore.ToString();
     }
 
     public int GetQuizScore()
@@ -44,7 +44,6 @@ public class ScoreManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {

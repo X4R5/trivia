@@ -23,6 +23,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4706244038918535340}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -246.40591, y: 1932.105, z: -429.08716}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -32,7 +33,6 @@ Transform:
   - {fileID: 6519106952902756449}
   - {fileID: 8729079670760691765}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &4225472529979613608
 PrefabInstance:
@@ -108,6 +108,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2270111203670776462}
     m_Modifications:
+    - target: {fileID: 75412591244670410, guid: 83e43f175d7e19944abf71ca7dda3b18, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.17254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 75412591244670410, guid: 83e43f175d7e19944abf71ca7dda3b18, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.14901961
+      objectReference: {fileID: 0}
+    - target: {fileID: 75412591244670410, guid: 83e43f175d7e19944abf71ca7dda3b18, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.13333334
+      objectReference: {fileID: 0}
     - target: {fileID: 4010095820869250851, guid: 83e43f175d7e19944abf71ca7dda3b18, type: 3}
       propertyPath: m_Name
       value: Main Camera

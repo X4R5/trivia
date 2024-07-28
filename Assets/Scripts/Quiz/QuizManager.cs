@@ -10,10 +10,12 @@ using System;
 public class QuizManager : MonoBehaviour
 {
     [SerializeField] int CORRECT_SCORE = 2, WRONG_SCORE = 1, QUESTION_COUNT = 3;
+    [SerializeField] Sprite wrongAnswerButtonSprite, correctAnswerButtonSprite, buttonSprite, timeUpButtonSprite;
+    [SerializeField] TMP_Text questionCounterText;
 
     public TMP_Text questionText, categoryText;
     public Button answerButton1, answerButton2, answerButton3, answerButton4;
-
+    bool canAnswer = false;
     private FirebaseFirestore db;
     private List<Question> questions = new List<Question>();
     private int currentQuestionIndex = 0;
@@ -66,18 +68,16 @@ public class QuizManager : MonoBehaviour
                 DocumentSnapshot questionSnapshot = documents[index];
                 if (questionSnapshot.Exists &&
                     questionSnapshot.TryGetValue("description", out string question) &&
-                    questionSnapshot.TryGetValue("options", out string options) &&
+                    questionSnapshot.TryGetValue("options", out List<string> options) &&
                     questionSnapshot.TryGetValue("correctAnswer", out string correct))
                 {
-                    string[] optionsArray = options.Split(',');
-                    List<string> optionsList = new List<string>(optionsArray);
-                    optionsList.Shuffle();
+                    options.Shuffle();
 
                     questions.Add(new Question
                     {
                         Description = question,
                         CorrectAnswer = correct,
-                        Options = optionsList
+                        Options = options
                     });
                 }
                 else
@@ -96,7 +96,11 @@ public class QuizManager : MonoBehaviour
     {
         if (currentQuestionIndex < questions.Count)
         {
+            canAnswer = true;
             isDoubleAnswerActive = false;
+            questionCounterText.text = (currentQuestionIndex + 1) + "/" + questions.Count;
+            ResetAllButtons();
+            QuestionTimeManager.instance.ResetTimer();
 
             answerButton1.interactable = answerButton2.interactable = answerButton3.interactable = answerButton4.interactable = true;
 
@@ -119,6 +123,11 @@ public class QuizManager : MonoBehaviour
         }
     }
 
+    private void ResetAllButtons()
+    {
+        answerButton1.image.sprite = answerButton2.image.sprite = answerButton3.image.sprite = answerButton4.image.sprite = buttonSprite;
+    }
+
     private void FinishQuiz()
     {
         PlayerPrefs.SetInt("QuizScore", ScoreManager.instance.GetQuizScore());
@@ -137,12 +146,21 @@ public class QuizManager : MonoBehaviour
 
     void CheckAnswer(string selectedAnswer)
     {
+        if (!canAnswer) return;
+
+        canAnswer = false;
         var currentQuestion = questions[currentQuestionIndex - 1];
 
         if (selectedAnswer == currentQuestion.CorrectAnswer)
         {
             ScoreManager.instance.AddQuizScore(CORRECT_SCORE);
-            DisplayNextQuestion();
+            foreach (Button button in new List<Button> { answerButton1, answerButton2, answerButton3, answerButton4 })
+            {
+                if (button.GetComponentInChildren<TMP_Text>().text == selectedAnswer)
+                {
+                    button.image.sprite = correctAnswerButtonSprite;
+                }
+            }
         }
         else
         {
@@ -153,17 +171,25 @@ public class QuizManager : MonoBehaviour
                     if (button.GetComponentInChildren<TMP_Text>().text == selectedAnswer)
                     {
                         button.interactable = false;
+                        button.image.sprite = wrongAnswerButtonSprite;
                     }
                 }
                 isDoubleAnswerActive = false;
                 return;
-            }
-            else
+            }else
             {
                 ScoreManager.instance.RemoveQuizScore(WRONG_SCORE);
-                DisplayNextQuestion();
+                foreach (Button button in new List<Button> { answerButton1, answerButton2, answerButton3, answerButton4 })
+                {
+                    if (button.GetComponentInChildren<TMP_Text>().text == selectedAnswer)
+                    {
+                        button.image.sprite = wrongAnswerButtonSprite;
+                    }
+                }
             }
         }
+
+        Invoke("DisplayNextQuestion", 1f);
     }
 
     public void SkipCurrentQuestion()
@@ -213,5 +239,20 @@ public class QuizManager : MonoBehaviour
                 buttons[index].interactable = false;
             }
         }
+    }
+
+    public void TimeUp()
+    {
+        ScoreManager.instance.RemoveQuizScore(WRONG_SCORE);
+
+        foreach (Button button in new List<Button> { answerButton1, answerButton2, answerButton3, answerButton4 })
+        {
+            if (button.GetComponentInChildren<TMP_Text>().text == questions[currentQuestionIndex - 1].CorrectAnswer)
+            {
+                button.image.sprite = timeUpButtonSprite;
+            }
+        }
+
+        Invoke("DisplayNextQuestion", 1f);
     }
 }
