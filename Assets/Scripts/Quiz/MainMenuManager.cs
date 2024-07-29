@@ -107,7 +107,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void LoadProfileScene()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Profile");
+        ProfileManager.instance.OpenProfilePopup();
     }
 
 }

@@ -172,6 +172,7 @@ public class QuizManager : MonoBehaviour
                     {
                         button.interactable = false;
                         button.image.sprite = wrongAnswerButtonSprite;
+                        canAnswer = true;
                     }
                 }
                 isDoubleAnswerActive = false;
