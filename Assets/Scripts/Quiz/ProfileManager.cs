@@ -5,8 +5,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
-using UnityEditor.UI;
+using System.Collections.Generic;
 using System;
+using Firebase.Extensions;
+using System.Linq;
 
 public class ProfileManager : MonoBehaviour
 {
@@ -23,6 +25,8 @@ public class ProfileManager : MonoBehaviour
     [SerializeField] Button closeProfilePopupButton;
     [SerializeField] TMP_Text userNameText, pointsText, joker1countText, joker2countText, joker3countText;
     [SerializeField] Image profileImage;
+    [SerializeField] List<Sprite> categorySprites = new List<Sprite>();
+    [SerializeField] List<GameObject> topCategoryObjects = new List<GameObject>();
 
     private void Awake()
     {
@@ -35,8 +39,64 @@ public class ProfileManager : MonoBehaviour
     void Start()
     {
         SetAllVariables();
+        SetBestCategoryVariables();
         closeProfilePopupButton.onClick.AddListener(CloseProfilePopup);
     }
+
+    private void SetBestCategoryVariables()
+    {
+        var allCategories = new List<string> { "Art", "Games", "Geography", "History", "Science", "Sports" };
+        var correctCounts = new Dictionary<string, int>();
+        var wrongCounts = new Dictionary<string, int>();
+        var successPercentages = new Dictionary<string, float>();
+
+        var answersDocRef = db.Collection("answers").Document(user.UserId);
+        answersDocRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+            {
+                DocumentSnapshot snapshot = task.Result;
+
+                if (snapshot.Exists)
+                {
+                    foreach (var category in allCategories)
+                    {
+                        snapshot.TryGetValue($"{category}Correct", out int correctCount);
+                        snapshot.TryGetValue($"{category}Wrong", out int wrongCount);
+
+                        correctCounts[category] = correctCount;
+                        wrongCounts[category] = wrongCount;
+
+                        int totalCount = correctCount + wrongCount;
+                        if (totalCount > 0)
+                        {
+                            float percentage = (float)correctCount / totalCount * 100;
+                            successPercentages[category] = percentage;
+                        }
+                        else
+                        {
+                            successPercentages[category] = 0;
+                        }
+                    }
+
+                    var sortedCategories = successPercentages.OrderByDescending(x => x.Value).Take(4).ToList();
+
+                    for (int i = 0; i < sortedCategories.Count; i++)
+                    {
+                        var category = sortedCategories[i].Key;
+                        float percentage = sortedCategories[i].Value;
+
+                        Transform categoryTransform = topCategoryObjects[i].transform;
+                        categoryTransform.Find("TrophyImage").gameObject.SetActive(true);
+                        categoryTransform.Find("CategoryImage").GetComponent<Image>().sprite = categorySprites[allCategories.IndexOf(category)];
+                        categoryTransform.Find("CategoryImage").Find("CategoryText").GetComponent<TMP_Text>().text = category;
+                        categoryTransform.Find("PercentText").GetComponent<TMP_Text>().text = $"{percentage:0.##}%";
+                    }
+                }
+            }
+        });
+    }
+
     private void PlaceAllVariables()
     {
         //loadingPanel.SetActive(false);

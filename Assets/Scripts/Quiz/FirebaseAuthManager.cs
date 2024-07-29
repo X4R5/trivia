@@ -177,12 +177,13 @@ public class FirebaseAuthManager : MonoBehaviour
         }
     }
 
-    private void CreateUserInFirestore(FirebaseUser user)
+    private async void CreateUserInFirestore(FirebaseUser user)
     {
 
         Debug.Log("Creating user in Firestore.");
 
         DocumentReference docRef = db.Collection("users").Document(user.UserId);
+        DocumentReference answersDocRef = db.Collection("answers").Document(user.UserId);
 
         var data = new Dictionary<string, object>
         {
@@ -197,7 +198,23 @@ public class FirebaseAuthManager : MonoBehaviour
             { "skipQuestionJokerCount", 1 }
         };
 
-        docRef.SetAsync(data).ContinueWithOnMainThread(task => {
+        var answersData = new Dictionary<string, object>
+        {
+            { "ArtCorrect", 0 },
+            { "ArtWrong", 0 },
+            { "GamesCorrect", 0 },
+            { "GamesWrong", 0 },
+            { "GeographyCorrect", 0 },
+            { "GeographyWrong", 0 },
+            { "HistoryCorrect", 0 },
+            { "HistoryWrong", 0 },
+            { "ScienceCorrect", 0 },
+            { "ScienceWrong", 0 },
+            { "SportsCorrect", 0 },
+            { "SportsWrong", 0 }
+        };
+
+        await docRef.SetAsync(data).ContinueWithOnMainThread(task => {
             if (task.IsFaulted || task.IsCanceled)
             {
                 Debug.LogError("Error adding document: " + task.Exception);
@@ -208,6 +225,20 @@ public class FirebaseAuthManager : MonoBehaviour
                 return;
             }
             Debug.Log("User added to Firestore.");
+        });
+
+        await answersDocRef.SetAsync(answersData).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted || task.IsCanceled)
+            {
+                Debug.LogError("Error adding document: " + task.Exception);
+                foreach (var ex in task.Exception.InnerExceptions)
+                {
+                    Debug.LogError("Exception: " + ex.Message);
+                }
+                return;
+            }
+            Debug.Log("Answers added to Firestore.");
         });
 
         PlayerPrefs.SetInt("profilePhoto", 0);

@@ -6,9 +6,12 @@ using Firebase.Extensions;
 using System.Threading.Tasks;
 using TMPro;
 using System;
+using Firebase.Auth;
 
 public class QuizManager : MonoBehaviour
 {
+    FirebaseAuth auth;
+
     [SerializeField] int CORRECT_SCORE = 2, WRONG_SCORE = 1, QUESTION_COUNT = 3;
     [SerializeField] Sprite wrongAnswerButtonSprite, correctAnswerButtonSprite, buttonSprite, timeUpButtonSprite;
     [SerializeField] TMP_Text questionCounterText;
@@ -23,6 +26,11 @@ public class QuizManager : MonoBehaviour
     private List<string> possibleAnswers = new List<string>();
 
     [SerializeField] GameObject loadingPanel;
+
+    private void Awake()
+    {
+        auth = FirebaseAuth.DefaultInstance;
+    }
 
     void Start()
     {
@@ -154,6 +162,10 @@ public class QuizManager : MonoBehaviour
         if (selectedAnswer == currentQuestion.CorrectAnswer)
         {
             ScoreManager.instance.AddQuizScore(CORRECT_SCORE);
+
+            var answersDocRef = db.Collection("answers").Document(auth.CurrentUser.UserId);
+            answersDocRef.UpdateAsync($"{PlayerPrefs.GetString("SelectedCategory")}Correct", FieldValue.Increment(1));
+
             foreach (Button button in new List<Button> { answerButton1, answerButton2, answerButton3, answerButton4 })
             {
                 if (button.GetComponentInChildren<TMP_Text>().text == selectedAnswer)
@@ -180,6 +192,10 @@ public class QuizManager : MonoBehaviour
             }else
             {
                 ScoreManager.instance.RemoveQuizScore(WRONG_SCORE);
+
+                var answersDocRef = db.Collection("answers").Document(auth.CurrentUser.UserId);
+                answersDocRef.UpdateAsync($"{PlayerPrefs.GetString("SelectedCategory")}Wrong", FieldValue.Increment(1));
+
                 foreach (Button button in new List<Button> { answerButton1, answerButton2, answerButton3, answerButton4 })
                 {
                     if (button.GetComponentInChildren<TMP_Text>().text == selectedAnswer)

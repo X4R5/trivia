@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MarketManager : MonoBehaviour
@@ -17,6 +18,7 @@ public class MarketManager : MonoBehaviour
     [SerializeField] List<Button> jokerButtons = new List<Button>();
     [SerializeField] List<Button> avatarButtons = new List<Button>();
     [SerializeField] List<int> boughtAvatars = new List<int>();
+    [SerializeField] Button backToMenuButton;
 
     [SerializeField] TMP_Text pointsText;
     int points, currentAvatar;
@@ -26,6 +28,7 @@ public class MarketManager : MonoBehaviour
     {
         auth = FirebaseAuth.DefaultInstance;
         db = FirebaseFirestore.DefaultInstance;
+        backToMenuButton.onClick.AddListener(BackToMenu);
 
         LoadMarket();
 
@@ -150,5 +153,10 @@ public class MarketManager : MonoBehaviour
         avatarButtons[avatarId].GetComponentInChildren<TMP_Text>().text = "Selected";
 
         SetupAvatarButtons();
+    }
+
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }

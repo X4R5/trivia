@@ -4,11 +4,13 @@ using Firebase.Firestore;
 using Firebase.Extensions;
 using System.Collections.Generic;
 using TMPro;
+using System;
 
 public class LeaderboardManager : MonoBehaviour
 {
     public Transform leaderboardContent;
     public GameObject leaderboardEntryPrefab;
+    [SerializeField] Button backToMenuButton;
 
     private FirebaseFirestore db;
 
@@ -16,6 +18,12 @@ public class LeaderboardManager : MonoBehaviour
     {
         db = FirebaseFirestore.DefaultInstance;
         LoadLeaderboard();
+        backToMenuButton.onClick.AddListener(BackToMenu);
+    }
+
+    private void BackToMenu()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 
     private void LoadLeaderboard()
