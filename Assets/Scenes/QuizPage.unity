@@ -198,7 +198,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4333484552046215988, guid: 3d3bd3965f5606c49b08070b75b2b867, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6822309475259310454, guid: 3d3bd3965f5606c49b08070b75b2b867, type: 3}
       propertyPath: m_Pivot.x
@@ -996,6 +996,7 @@ GameObject:
   - component: {fileID: 504837168}
   - component: {fileID: 504837170}
   - component: {fileID: 504837171}
+  - component: {fileID: 504837172}
   m_Layer: 0
   m_Name: '[QuizManager]'
   m_TagString: Untagged
@@ -1029,7 +1030,6 @@ MonoBehaviour:
   answerButton2: {fileID: 1537199159}
   answerButton3: {fileID: 1362066186}
   answerButton4: {fileID: 1278776734}
-  loadingPanel: {fileID: 84521297}
 --- !u!4 &504837169
 Transform:
   m_ObjectHideFlags: 0
@@ -1075,6 +1075,24 @@ MonoBehaviour:
   timeToAnswer: 10
   progressBar: {fileID: 218907943}
   timeText: {fileID: 512599450}
+--- !u!114 &504837172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 504837167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a87c36dde6f9c7146b8fe4a3b13d4e02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  progressBar: {fileID: 640422498}
+  minSpeed: 0.5
+  maxSpeed: 1.5
+  stallTime: 0.5
+  speedUpFactor: 2
+  loadingScreen: {fileID: 84521297}
 --- !u!1 &512599448
 GameObject:
   m_ObjectHideFlags: 0
@@ -1209,6 +1227,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 512599448}
   m_CullTransparentMesh: 1
+--- !u!114 &640422498 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2939126179436804429, guid: 3d3bd3965f5606c49b08070b75b2b867, type: 3}
+  m_PrefabInstance: {fileID: 84521296}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &839052107
 GameObject:
   m_ObjectHideFlags: 0
@@ -1813,11 +1842,11 @@ RectTransform:
   - {fileID: 1425120300}
   - {fileID: 934145998}
   - {fileID: 136681891}
-  - {fileID: 84521298}
   - {fileID: 1727328268}
   - {fileID: 1435601105}
   - {fileID: 218907942}
   - {fileID: 839052108}
+  - {fileID: 84521298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

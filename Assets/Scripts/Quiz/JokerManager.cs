@@ -32,6 +32,30 @@ public class JokerManager : MonoBehaviour
 
     private void SetJokerCounts()
     {
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn", 0) == 1;
+
+        if (isLoggedIn)
+        {
+            SetJokerCountsWithFirebase();
+        }
+        else
+        {
+            SetJokerCountsWithJsonFile();
+        }
+    }
+
+    private void SetJokerCountsWithJsonFile()
+    {
+        var json = Resources.Load<TextAsset>("User");
+        var user = JsonUtility.FromJson<User>(json.text);
+
+        bombJokerButton.GetComponentInChildren<TMP_Text>().text = user.bombJokerCount.ToString();
+        doubleAnswerJokerButton.GetComponentInChildren<TMP_Text>().text = user.doubleAnswerJokerCount.ToString();
+        skipQuestionJokerButton.GetComponentInChildren<TMP_Text>().text = user.skipQuestionJokerCount.ToString();
+    }
+
+    private void SetJokerCountsWithFirebase()
+    {
         DocumentReference docRef = db.Collection("users").Document(auth.CurrentUser.UserId);
         docRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {

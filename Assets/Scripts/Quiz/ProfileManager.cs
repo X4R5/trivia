@@ -6,9 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using System.Collections.Generic;
-using System;
 using Firebase.Extensions;
 using System.Linq;
+using System;
 
 public class ProfileManager : MonoBehaviour
 {
@@ -44,6 +44,65 @@ public class ProfileManager : MonoBehaviour
     }
 
     private void SetBestCategoryVariables()
+    {
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn");
+
+        if (isLoggedIn == 1)
+        {
+            SetBestCategoryWithFirebase();
+        }
+        else
+        {
+            SetBestCategoryWithJsonFile();
+        }
+    }
+
+    private void SetBestCategoryWithJsonFile()
+    {
+        var json = Resources.Load<TextAsset>("Answers");
+        var answers = JsonUtility.FromJson<Answers>(json.text);
+
+        var allCategories = new List<string> { "Art", "Games", "Geography", "History", "Science", "Sports" };
+        var correctCounts = new Dictionary<string, int>();
+        var wrongCounts = new Dictionary<string, int>();
+        var successPercentages = new Dictionary<string, float>();
+
+        foreach (var category in allCategories)
+        {
+            var correctCount = (int)answers.GetType().GetField($"{category}Correct").GetValue(answers);
+            var wrongCount = (int)answers.GetType().GetField($"{category}Wrong").GetValue(answers);
+
+            correctCounts[category] = correctCount;
+            wrongCounts[category] = wrongCount;
+
+            int totalCount = correctCount + wrongCount;
+            if (totalCount > 0)
+            {
+                float percentage = (float)correctCount / totalCount * 100;
+                successPercentages[category] = percentage;
+            }
+            else
+            {
+                successPercentages[category] = 0;
+            }
+        }
+
+        var sortedCategories = successPercentages.OrderByDescending(x => x.Value).Take(4).ToList();
+
+        for (int i = 0; i < sortedCategories.Count; i++)
+        {
+            var category = sortedCategories[i].Key;
+            float percentage = sortedCategories[i].Value;
+
+            Transform categoryTransform = topCategoryObjects[i].transform;
+            categoryTransform.Find("TrophyImage").gameObject.SetActive(true);
+            categoryTransform.Find("CategoryImage").GetComponent<Image>().sprite = categorySprites[allCategories.IndexOf(category)];
+            categoryTransform.Find("CategoryImage").Find("CategoryText").GetComponent<TMP_Text>().text = category;
+            categoryTransform.Find("PercentText").GetComponent<TMP_Text>().text = $"{percentage:0.##}%";
+        }
+    }
+
+    private void SetBestCategoryWithFirebase()
     {
         var allCategories = new List<string> { "Art", "Games", "Geography", "History", "Science", "Sports" };
         var correctCounts = new Dictionary<string, int>();
@@ -118,6 +177,33 @@ public class ProfileManager : MonoBehaviour
     }
 
     public async Task SetAllVariablesAsync()
+    {
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn");
+
+        if (isLoggedIn == 1)
+        {
+            await SetUserVariablesWithFirebase();
+        }
+        else
+        {
+            SetUserVariablesWithJsonFile();
+        }
+    }
+
+    private void SetUserVariablesWithJsonFile()
+    {
+        var json = Resources.Load<TextAsset>("User");
+        var user = JsonUtility.FromJson<User>(json.text);
+
+        username = user.username;
+        points = user.points.ToString();
+        photoId = user.profilePhoto;
+        joker1count = user.bombJokerCount;
+        joker2count = user.doubleAnswerJokerCount;
+        joker3count = user.skipQuestionJokerCount;
+    }
+
+    private async Task SetUserVariablesWithFirebase()
     {
         DocumentReference docRef = db.Collection("users").Document(user.UserId);
         DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();

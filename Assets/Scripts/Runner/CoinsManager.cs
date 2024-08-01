@@ -3,6 +3,7 @@ using Firebase.Firestore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -68,8 +69,41 @@ public class CoinsManager : MonoBehaviour
 
     public async Task OnGameFinished()
     {
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn", 0) == 1;
+
+        if (isLoggedIn)
+        {
+            await UpdateCoinsWithFirebase();
+        }
+        else
+        {
+            UpdateCoinsWithJsonFile();
+        }
+    }
+
+    private void UpdateCoinsWithJsonFile()
+    {
+        var json = Resources.Load<TextAsset>("User");
+        var user = JsonUtility.FromJson<User>(json.text);
+
+        user.points += coins;
+        coins = 0;
+
+        var jsonUser = JsonUtility.ToJson(user, true);
+
+        var filePath = Path.Combine(Application.dataPath, "Resources/User.json");
+
+        System.IO.File.WriteAllText(filePath, jsonUser);
+
+#if UNITY_EDITOR
+        UnityEditor.AssetDatabase.ImportAsset("Assets/Resources/User.json", UnityEditor.ImportAssetOptions.ForceUpdate);
+#endif
+    }
+
+
+    private async Task UpdateCoinsWithFirebase()
+    {
         DocumentReference docRef = db.Collection("users").Document(auth.CurrentUser.UserId);
         await docRef.UpdateAsync("points", FieldValue.Increment(coins));
     }
-
 }

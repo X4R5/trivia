@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 using TMPro;
 using System;
 using Firebase.Auth;
+using System.IO;
 
 public class QuizManager : MonoBehaviour
 {
+    public static QuizManager instance;
+
     FirebaseAuth auth;
 
     [SerializeField] int CORRECT_SCORE = 2, WRONG_SCORE = 1, QUESTION_COUNT = 3;
@@ -25,11 +28,10 @@ public class QuizManager : MonoBehaviour
     private bool isDoubleAnswerActive = false;
     private List<string> possibleAnswers = new List<string>();
 
-    [SerializeField] GameObject loadingPanel;
-
     private void Awake()
     {
         auth = FirebaseAuth.DefaultInstance;
+        instance = this;
     }
 
     void Start()
@@ -46,7 +48,7 @@ public class QuizManager : MonoBehaviour
     async void GetQuestions()
     {
         await GetQuestionsAsync();
-        DisplayNextQuestion();
+        FakeLoadingScreen.instance.SpeedUpLoading();
     }
 
     public async Task GetQuestionsAsync()
@@ -100,7 +102,7 @@ public class QuizManager : MonoBehaviour
         }
     }
 
-    void DisplayNextQuestion()
+    public void DisplayNextQuestion()
     {
         if (currentQuestionIndex < questions.Count)
         {
@@ -156,6 +158,8 @@ public class QuizManager : MonoBehaviour
     {
         if (!canAnswer) return;
 
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn", 0) == 1;
+
         canAnswer = false;
         var currentQuestion = questions[currentQuestionIndex - 1];
 
@@ -163,8 +167,15 @@ public class QuizManager : MonoBehaviour
         {
             ScoreManager.instance.AddQuizScore(CORRECT_SCORE);
 
-            var answersDocRef = db.Collection("answers").Document(auth.CurrentUser.UserId);
-            answersDocRef.UpdateAsync($"{PlayerPrefs.GetString("SelectedCategory")}Correct", FieldValue.Increment(1));
+            if (isLoggedIn)
+            {
+                var answersDocRef = db.Collection("answers").Document(auth.CurrentUser.UserId);
+                answersDocRef.UpdateAsync($"{PlayerPrefs.GetString("SelectedCategory")}Correct", FieldValue.Increment(1));
+            }
+            else
+            {
+                UpdateLocalJsonAnswers($"{PlayerPrefs.GetString("SelectedCategory")}Correct");
+            }
 
             foreach (Button button in new List<Button> { answerButton1, answerButton2, answerButton3, answerButton4 })
             {
@@ -189,12 +200,20 @@ public class QuizManager : MonoBehaviour
                 }
                 isDoubleAnswerActive = false;
                 return;
-            }else
+            }
+            else
             {
                 ScoreManager.instance.RemoveQuizScore(WRONG_SCORE);
 
-                var answersDocRef = db.Collection("answers").Document(auth.CurrentUser.UserId);
-                answersDocRef.UpdateAsync($"{PlayerPrefs.GetString("SelectedCategory")}Wrong", FieldValue.Increment(1));
+                if (isLoggedIn)
+                {
+                    var answersDocRef = db.Collection("answers").Document(auth.CurrentUser.UserId);
+                    answersDocRef.UpdateAsync($"{PlayerPrefs.GetString("SelectedCategory")}Wrong", FieldValue.Increment(1));
+                }
+                else
+                {
+                    UpdateLocalJsonAnswers($"{PlayerPrefs.GetString("SelectedCategory")}Wrong");
+                }
 
                 foreach (Button button in new List<Button> { answerButton1, answerButton2, answerButton3, answerButton4 })
                 {
@@ -208,6 +227,25 @@ public class QuizManager : MonoBehaviour
 
         Invoke("DisplayNextQuestion", 1f);
     }
+
+    void UpdateLocalJsonAnswers(string field)
+    {
+        var answers = Resources.Load<TextAsset>("Answers");
+        var answersData = JsonUtility.FromJson<Answers>(answers.text);
+
+        var currentValue = (int)answersData.GetType().GetField(field).GetValue(answersData);
+        answersData.GetType().GetField(field).SetValue(answersData, currentValue + 1);
+
+        var updatedJson = JsonUtility.ToJson(answersData, true); // Pretty print for easier debugging
+        var filePath = Path.Combine(Application.dataPath, "Resources/Answers.json");
+
+        File.WriteAllText(filePath, updatedJson);
+
+#if UNITY_EDITOR
+        UnityEditor.AssetDatabase.ImportAsset("Assets/Resources/Answers.json", UnityEditor.ImportAssetOptions.ForceUpdate);
+#endif
+    }
+
 
     public void SkipCurrentQuestion()
     {

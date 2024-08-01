@@ -4,6 +4,7 @@ using Firebase.Firestore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -46,28 +47,69 @@ public class MarketManager : MonoBehaviour
 
     private void BuyJoker(int jokerId)
     {
-        if (points >= jokerPrice)
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn", 0) == 1;
+
+        if (isLoggedIn)
         {
-            points -= jokerPrice;
-            pointsText.text = points.ToString();
-
-            DocumentReference docRef = db.Collection("users").Document(auth.CurrentUser.UserId);
-            docRef.UpdateAsync("points", FieldValue.Increment(-jokerPrice));
-
-            switch (jokerId)
+            if (points >= jokerPrice)
             {
-                case 0:
-                    docRef.UpdateAsync("bombJokerCount", FieldValue.Increment(1));
-                    break;
-                case 1:
-                    docRef.UpdateAsync("doubleAnswerJokerCount", FieldValue.Increment(1));
-                    break;
-                case 2:
-                    docRef.UpdateAsync("skipQuestionJokerCount", FieldValue.Increment(1));
-                    break;
-            }
+                points -= jokerPrice;
+                pointsText.text = points.ToString();
 
-            UpdatePointsText();
+                DocumentReference docRef = db.Collection("users").Document(auth.CurrentUser.UserId);
+                docRef.UpdateAsync("points", FieldValue.Increment(-jokerPrice));
+
+                switch (jokerId)
+                {
+                    case 0:
+                        docRef.UpdateAsync("bombJokerCount", FieldValue.Increment(1));
+                        break;
+                    case 1:
+                        docRef.UpdateAsync("doubleAnswerJokerCount", FieldValue.Increment(1));
+                        break;
+                    case 2:
+                        docRef.UpdateAsync("skipQuestionJokerCount", FieldValue.Increment(1));
+                        break;
+                }
+
+                UpdatePointsText();
+            }
+        }
+        else
+        {
+            var json = Resources.Load<TextAsset>("User");
+            var user = JsonUtility.FromJson<User>(json.text);
+
+            if (user.points >= jokerPrice)
+            {
+                user.points -= jokerPrice;
+                pointsText.text = user.points.ToString();
+
+                switch (jokerId)
+                {
+                    case 0:
+                        user.bombJokerCount++;
+                        break;
+                    case 1:
+                        user.doubleAnswerJokerCount++;
+                        break;
+                    case 2:
+                        user.skipQuestionJokerCount++;
+                        break;
+                }
+
+                var jsonUser = JsonUtility.ToJson(user, true);
+
+                var filePath = Path.Combine(Application.dataPath, "Resources/User.json");
+
+                System.IO.File.WriteAllText(filePath, jsonUser);
+
+#if UNITY_EDITOR
+                UnityEditor.AssetDatabase.ImportAsset("Assets/Resources/User.json", UnityEditor.ImportAssetOptions.ForceUpdate);
+#endif
+
+                UpdatePointsText();
+            }
         }
     }
 
@@ -79,29 +121,45 @@ public class MarketManager : MonoBehaviour
 
     private async void LoadMarket()
     {
-        await db.Collection("users").Document(auth.CurrentUser.UserId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
-        {
-            if (task.IsFaulted)
-            {
-                Debug.LogError("Error loading market: " + task.Exception);
-                return;
-            }
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn", 0) == 1;
 
-            DocumentSnapshot snapshot = task.Result;
-            if (snapshot.Exists)
+        if (isLoggedIn)
+        {
+            await db.Collection("users").Document(auth.CurrentUser.UserId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
             {
-                points = snapshot.GetValue<int>("points");
-                currentAvatar = snapshot.GetValue<int>("profilePhoto");
-                boughtAvatars = snapshot.GetValue<List<int>>("boughtAvatars");
-            }
-            else
-            {
-                Debug.Log("No market data found.");
-            }
-        });
+                if (task.IsFaulted)
+                {
+                    Debug.LogError("Error loading market: " + task.Exception);
+                    return;
+                }
+
+                DocumentSnapshot snapshot = task.Result;
+                if (snapshot.Exists)
+                {
+                    points = snapshot.GetValue<int>("points");
+                    currentAvatar = snapshot.GetValue<int>("profilePhoto");
+                    boughtAvatars = snapshot.GetValue<List<int>>("boughtAvatars");
+                }
+                else
+                {
+                    Debug.Log("No market data found.");
+                }
+            });
+        }
+        else
+        {
+            var json = Resources.Load<TextAsset>("User");
+            var user = JsonUtility.FromJson<User>(json.text);
+
+            points = user.points;
+            currentAvatar = user.profilePhoto;
+            boughtAvatars = user.boughtAvatars;
+        }
 
         UpdatePointsText();
         SetupAvatarButtons();
+
+        if(FakeLoadingScreen.instance != null) FakeLoadingScreen.instance.SpeedUpLoading();
     }
 
     private void SetupAvatarButtons()
@@ -127,22 +185,44 @@ public class MarketManager : MonoBehaviour
 
     private void BuyAvatar(int avatarId)
     {
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn", 0) == 1;
+
         if (points >= avatarPrice)
         {
             points -= avatarPrice;
             boughtAvatars.Add(avatarId);
             currentAvatar = avatarId;
 
-            DocumentReference docRef = db.Collection("users").Document(auth.CurrentUser.UserId);
-            docRef.UpdateAsync("points", FieldValue.Increment(-avatarPrice));
-            docRef.UpdateAsync("boughtAvatars", FieldValue.ArrayUnion(avatarId));
-            docRef.UpdateAsync("profilePhoto", avatarId);
+            if (isLoggedIn)
+            {
+                DocumentReference docRef = db.Collection("users").Document(auth.CurrentUser.UserId);
+                docRef.UpdateAsync("points", FieldValue.Increment(-avatarPrice));
+                docRef.UpdateAsync("boughtAvatars", FieldValue.ArrayUnion(avatarId));
+                docRef.UpdateAsync("profilePhoto", avatarId);
+            }
+            else
+            {
+                var json = Resources.Load<TextAsset>("User");
+                var user = JsonUtility.FromJson<User>(json.text);
 
+                user.points -= avatarPrice;
+                user.boughtAvatars.Add(avatarId);
+                user.profilePhoto = avatarId;
+
+                var jsonUser = JsonUtility.ToJson(user, true);
+                var filePath = Path.Combine(Application.dataPath, "Resources/User.json");
+                System.IO.File.WriteAllText(filePath, jsonUser);
+
+#if UNITY_EDITOR
+                UnityEditor.AssetDatabase.ImportAsset("Assets/Resources/User.json", UnityEditor.ImportAssetOptions.ForceUpdate);
+#endif
+            }
 
             UpdatePointsText();
             SetupAvatarButtons();
         }
     }
+
 
     private void ChangeAvatar(int avatarId)
     {

@@ -82,24 +82,25 @@ public class MainMenuManager : MonoBehaviour
         var allAvatars = Resources.LoadAll<Sprite>("AvatarPack");
         int currentAvatar = 0;
 
-        await db.Collection("users").Document(auth.CurrentUser.UserId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
-        {
-            if (task.IsFaulted)
-            {
-                Debug.LogError("Error loading profile: " + task.Exception);
-                return;
-            }
+        var isLoggedIn = PlayerPrefs.GetInt("isLoggedIn", 0) == 1;
 
-            DocumentSnapshot snapshot = task.Result;
+        if (isLoggedIn)
+        {
+            DocumentReference docRef = db.Collection("users").Document(auth.CurrentUser.UserId);
+            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
             if (snapshot.Exists)
             {
-                currentAvatar = snapshot.GetValue<int>("profilePhoto");
+                Dictionary<string, object> user = snapshot.ToDictionary();
+                snapshot.TryGetValue("profilePhoto", out currentAvatar);
             }
-            else
-            {
-                Debug.Log("No profile data found.");
-            }
-        });
+        }
+        else
+        {
+            var json = Resources.Load<TextAsset>("User");
+            var user = JsonUtility.FromJson<User>(json.text);
+            currentAvatar = user.profilePhoto;
+        }
 
 
         profileButton.GetComponent<Image>().sprite = allAvatars[currentAvatar];

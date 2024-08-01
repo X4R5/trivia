@@ -1,0 +1,15 @@
+{
+    "username": "User",
+    "email": "user@user.com",
+    "points": 10,
+    "profilePhoto": 2,
+    "bombJokerCount": 1,
+    "doubleAnswerJokerCount": 1,
+    "skipQuestionJokerCount": 1,
+    "boughtAvatars": [
+        0,
+        1,
+        2,
+        2
+    ]
+}
